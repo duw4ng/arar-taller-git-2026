@@ -100,3 +100,4 @@ classDiagram
     
     Aldeano <|-- AldeanoArmero
     Aldeano <|-- AldeanoGranjero
+    
