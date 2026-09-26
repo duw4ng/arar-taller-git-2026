@@ -1,6 +1,6 @@
 package py.edu.uc.lp3.arar_taller_git_2026.minecraft;
 
-public class Aldeano extends EntidadPasiva {
+public abstract class Aldeano extends EntidadPasiva {
     private String profesion;
 
     public Aldeano(String nombre, int vida, String posicion, String alimentacion, String profesion) {
@@ -29,4 +29,7 @@ public class Aldeano extends EntidadPasiva {
         if (getVida() <= 0) return;
         System.out.println(getNombre() + " camina hacia su bloque de trabajo relacionado con su profesión (" + profesion + ").");
     }
+
+    // NUEVO: Método abstracto que obliga a las hijas a definir cómo trabajan, retornando un String para el JSON
+    public abstract String trabajar();
 }
