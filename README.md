@@ -39,6 +39,12 @@
 | **Resolución** | Tiempo de compilación (*Static binding*). | Tiempo de ejecución (*Dynamic binding*). |
 | **Anotación** | No utiliza anotaciones. | Utiliza `@Override`. |
 | **Ejemplo en el Proyecto** | Constructores de `AldeanoArmero` / `AldeanoGranjero`. | `trabajar()` en `AldeanoArmero` y `AldeanoGranjero`. |
+
+### Sobrecarga del Mensaje de Dominio `comerciar()`
+Se implementó sobrecarga de métodos en la clase `Aldeano` para el mensaje de dominio `comerciar`:
+1. `comerciar()`: Inicia la interfaz básica de intercambio comercial sin argumentos.
+2. `comerciar(String item, int cantidad)`: Ejecuta una transacción específica validando la cantidad de ítems a intercambiar por esmeraldas.
+   
 ## Diagrama de Clases (Modelado POO)
 
 ```mermaid
