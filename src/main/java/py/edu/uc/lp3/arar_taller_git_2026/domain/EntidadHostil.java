@@ -1,4 +1,4 @@
-package py.edu.uc.lp3.arar_taller_git_2026.minecraft;
+package py.edu.uc.lp3.arar_taller_git_2026.domain;
 
 // Subclase abstracta para criaturas hostiles
 public abstract class EntidadHostil extends Entidad {
