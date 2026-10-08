@@ -1,6 +1,7 @@
 package py.edu.uc.lp3.arar_taller_git_2026.web;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import py.edu.uc.lp3.arar_taller_git_2026.minecraft.Aldeano;
 import py.edu.uc.lp3.arar_taller_git_2026.minecraft.AldeanoArmero;
@@ -26,5 +27,29 @@ public class AldeanoController {
             Aldeano::getNombre,
             Aldeano::trabajar
         ));
+    }
+
+    // Endpoint para construir un AldeanoArmero desde la URL
+    @GetMapping("/minecraft/crear-armero")
+    public AldeanoArmero crearArmero(
+            @RequestParam(defaultValue = "Pedro") String nombre,
+            @RequestParam(defaultValue = "20") int vida,
+            @RequestParam(defaultValue = "10,64,10") String posicion,
+            @RequestParam(defaultValue = "Carne") String alimentacion,
+            @RequestParam(defaultValue = "3") int nivelHerreria) {
+
+        return new AldeanoArmero(nombre, vida, posicion, alimentacion, nivelHerreria);
+    }
+
+    // Endpoint para construir un AldeanoGranjero desde la URL
+    @GetMapping("/minecraft/crear-granjero")
+    public AldeanoGranjero crearGranjero(
+            @RequestParam(defaultValue = "Juan") String nombre,
+            @RequestParam(defaultValue = "20") int vida,
+            @RequestParam(defaultValue = "15,64,12") String posicion,
+            @RequestParam(defaultValue = "Pan") String alimentacion,
+            @RequestParam(defaultValue = "Trigo") String tipoCultivo) {
+
+        return new AldeanoGranjero(nombre, vida, posicion, alimentacion, tipoCultivo);
     }
 }
