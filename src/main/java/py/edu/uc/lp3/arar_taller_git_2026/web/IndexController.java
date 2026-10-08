@@ -1,4 +1,4 @@
-package py.edu.uc.lp3.arar_taller_git_2026.web;
+package py.edu.uc.lp3.arar_taller_git_2026.rest.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
