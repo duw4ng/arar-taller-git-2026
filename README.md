@@ -1,6 +1,10 @@
 # arar-taller-git-2026
 ./mvnw spring-boot:run
 
+Sobrecarga (Overloading): Presente en los constructores de las entidades (ej. las múltiples formas de inicializar atributos con validaciones) o métodos con la misma firma y diferentes parámetros.
+
+Sobreescritura (Overriding): Presente en el método abstracto trabajar() implementado de forma independiente en AldeanoArmero y AldeanoGranjero, así como en actuar().
+
 ## Diagrama de Clases (Modelado POO)
 
 ```mermaid
