@@ -1,4 +1,4 @@
-package py.edu.uc.lp3.arar_taller_git_2026.minecraft;
+package py.edu.uc.lp3.arar_taller_git_2026.domain;
 
 // Clase base abstracta que define las propiedades y comportamientos comunes
 public abstract class Entidad {
