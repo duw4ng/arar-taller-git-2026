@@ -199,6 +199,8 @@ Lectura del diagrama:
 - **Uso del repositorio:** los controllers dependen de `AldeanoRepository` (o del servicio que lo envuelve).
 - **Jerarquía de excepciones:** `MinecraftException` es la base; `ReglaDeJuegoException` y `EntidadNoEncontradaException` son las hijas; `ApiExceptionHandler` atiende un tipo por método.
 
+Por claridad, el diagrama muestra a `Creeper` colgando directamente de `Entidad`. En el código, `Creeper` hereda de `Entidad` a través de la clase abstracta `EntidadHostil`, que aporta los campos `daño` y `objetivo`.
+
 ---
 
 ## 4. API REST
