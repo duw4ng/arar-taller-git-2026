@@ -108,7 +108,13 @@
         "text": "{\n  \"tipo\": \"ARMERO\",\n  \"nombre\": \"Pedro\",\n  \"vida\": 20,\n  \"posicion\": \"5,64,0\",\n  \"alimentacion\": \"Carne\",\n  \"nivelHerreria\": 3\n}"
       },
       "parameters": [],
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": ""
+        }
+      ],
       "authentication": {},
       "metaSortKey": 1020,
       "isPrivate": false,
@@ -134,7 +140,13 @@
         "text": "{\n  \"tipo\": \"GRANJERO\",\n  \"nombre\": \"Juan\",\n  \"vida\": 25,\n  \"posicion\": \"20,64,0\",\n  \"alimentacion\": \"Pan\",\n  \"tipoCultivo\": \"Trigo\"\n}"
       },
       "parameters": [],
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": ""
+        }
+      ],
       "authentication": {},
       "metaSortKey": 1030,
       "isPrivate": false,
@@ -206,7 +218,13 @@
         "text": "{\n  \"tipo\": \"ARMERO\",\n  \"nombre\": \"Pedro Actualizado\",\n  \"vida\": 30,\n  \"posicion\": \"4,64,0\",\n  \"alimentacion\": \"Carne\",\n  \"nivelHerreria\": 2\n}"
       },
       "parameters": [],
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": ""
+        }
+      ],
       "authentication": {},
       "metaSortKey": 1060,
       "isPrivate": false,
@@ -232,7 +250,13 @@
         "text": "{\n  \"vida\": 18\n}"
       },
       "parameters": [],
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": ""
+        }
+      ],
       "authentication": {},
       "metaSortKey": 1070,
       "isPrivate": false,
@@ -304,7 +328,13 @@
         "text": "{\n  \"tipo\": \"ARMERO\",\n  \"nombre\": \"Malo\",\n  \"vida\": 20,\n  \"posicion\": \"0,64,0\",\n  \"alimentacion\": \"Carne\",\n  \"nivelHerreria\": 99\n}"
       },
       "parameters": [],
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": ""
+        }
+      ],
       "authentication": {},
       "metaSortKey": 2010,
       "isPrivate": false,
@@ -353,7 +383,13 @@
         "text": "{\n  \"potencia\": 0,\n  \"radio\": 8,\n  \"posicionCreeper\": \"0,64,0\",\n  \"tiempoCarga\": 3\n}"
       },
       "parameters": [],
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": ""
+        }
+      ],
       "authentication": {},
       "metaSortKey": 2030,
       "isPrivate": false,
@@ -402,7 +438,13 @@
         "text": "{\n  \"potencia\": 30,\n  \"radio\": 30,\n  \"posicionCreeper\": \"0,64,0\",\n  \"tiempoCarga\": 3\n}"
       },
       "parameters": [],
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": ""
+        }
+      ],
       "authentication": {},
       "metaSortKey": 3020,
       "isPrivate": false,
