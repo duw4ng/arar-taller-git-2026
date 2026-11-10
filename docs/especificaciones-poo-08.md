@@ -3,7 +3,7 @@
 **Alumno:** Alexandre Avalos (`duw4ng`)  
 **Dominio:** Minecraft  
 **Repositorio:** <https://github.com/duw4ng/arar-taller-git-2026>  
-**Commit de la solución:** <https://github.com/duw4ng/arar-taller-git-2026/commit/460d7111a5ae1000462c9a2934c73c6221375f22>  
+**Commit de la solución:** <https://github.com/duw4ng/arar-taller-git-2026/commit/dafa0f16ae8194ddf0e505892a9be367eadb975b>  
 **Bitácora:** <https://github.com/duw4ng/arar-taller-git-2026/blob/main/BITACORA.md>
 
 ## 1. Objetivo
