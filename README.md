@@ -45,7 +45,7 @@ Archivo: `src/main/resources/application.properties`.
 | `spring.h2.console.enabled` | `true` | Habilita la consola web de H2. |
 | `spring.h2.console.path` | `/h2-console` | URL de la consola. |
 
-**Consola H2:** abrir <http://localhost:8080/h2-console>, usar `jdbc:h2:file:./data/entidades`, usuario `sa` y contraseña vacía. La tabla persistida se llama `aldeanos`.
+**Consola H2:** abrir <http://localhost:8080/h2-console>, usar `jdbc:h2:file:./data/entidades`, usuario `sa` y contraseña vacía. La tabla persistida se llama `aldeanos`. En Spring Boot 4 la consola ya no sale del driver H2: requiere la dependencia explícita `org.springframework.boot:spring-boot-h2console` (ver `pom.xml`); sin ese módulo las propiedades se ignoran y `/h2-console` da 404.
 
 **Si mañana se cambia H2 por otra base:** se tocan `pom.xml` (driver), `application.properties` (URL, usuario, contraseña y dialecto) y, si se usa, la herramienta de migraciones. Las entidades, el repositorio, los servicios, los controllers y las reglas del dominio se quedan quietos.
 
