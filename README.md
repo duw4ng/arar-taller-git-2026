@@ -4,6 +4,7 @@ Servicio HTTP con Spring Boot sobre el modelado de **Minecraft**. Persiste en **
 
 - **Autor:** Alexandre Avalos (`duw4ng`)
 - **Dominio:** Minecraft
+- **Licencia:** Apache 2.0 (ver [`LICENSE`](LICENSE))
 - **Commit de la solución:** <https://github.com/duw4ng/arar-taller-git-2026/commit/dafa0f16ae8194ddf0e505892a9be367eadb975b>
 - **Enunciado:** <https://github.com/alefq/afq-taller-git-2024/blob/main/docs/ejercicio-poo-08-crud-h2-insomnia-2026-10-28.md>
 - **Rúbrica:** <https://github.com/alefq/afq-taller-git-2024/blob/main/docs/RUBRICA-ejercicios-lp3-2026.md>
@@ -47,7 +48,7 @@ Archivo: `src/main/resources/application.properties`.
 
 **Consola H2:** abrir <http://localhost:8080/h2-console>, usar `jdbc:h2:file:./data/entidades`, usuario `sa` y contraseña vacía. La tabla persistida se llama `aldeanos`. En Spring Boot 4 la consola ya no sale del driver H2: requiere la dependencia explícita `org.springframework.boot:spring-boot-h2console` (ver `pom.xml`); sin ese módulo las propiedades se ignoran y `/h2-console` da 404.
 
-**Si mañana se cambia H2 por otra base:** se tocan `pom.xml` (driver), `application.properties` (URL, usuario, contraseña y dialecto) y, si se usa, la herramienta de migraciones. Las entidades, el repositorio, los servicios, los controllers y las reglas del dominio se quedan quietos.
+**Si mañana se cambia H2 por otra base:** se tocan `pom.xml` (driver), `application.properties` (URL, usuario, contraseña y dialecto) y, si se usa, la herramienta de migraciones. Las entidades, el repositorio, los servicios con las reglas, los controllers y los DTOs se quedan quietos.
 
 ---
 
@@ -59,7 +60,7 @@ La familia persistida es:
 - `AldeanoArmero` — hija concreta, entidad JPA.
 - `AldeanoGranjero` — hija concreta, entidad JPA.
 
-La relación «es un» se mantiene: un armero y un granjero **son** aldeanos. El método abstracto `trabajar()` de POO-06 sigue existiendo y cada hija lo sobrescribe. La simulación agrega otro método abstracto, `resistirExplosion(int)`, también sobrescrito por las dos hijas.
+La relación «es un» se mantiene: un armero y un granjero **son** aldeanos. El método abstracto `trabajar()` de POO-06 sigue existiendo y cada hija lo sobrescribe. La posición se modela con `Posicion`, un `@Embeddable` de tres coordenadas `double` (`x`, `y`, `z`), para que la base no pueda guardar texto libre como `"abc"`.
 
 La interfaz de dominio es **`Danable`**:
 
@@ -80,15 +81,22 @@ La implementan `Aldeano` (familia pasiva) y `Creeper` (familia hostil). El endpo
 classDiagram
     direction LR
 
+    class Posicion {
+        <<Embeddable>>
+        -double x
+        -double y
+        -double z
+        +comoTexto() String
+    }
+
     class Entidad {
         <<MappedSuperclass>>
         -Long id
         -String nombre
         -int vida
-        -String posicion
+        -Posicion posicion
         +getVida() int
         +recibirDaño(int) void
-        +distanciaA(Entidad) double
         +actuar()* void
     }
 
@@ -108,8 +116,9 @@ classDiagram
     class Aldeano {
         <<Entity abstract>>
         -String profesion
+        +comerciar() String
+        +comerciar(String, int) String
         +trabajar()* String
-        +resistirExplosion(int)* int
         +estadoVida() String
     }
 
@@ -117,7 +126,6 @@ classDiagram
         <<Entity>>
         -int nivelHerreria
         +trabajar() String
-        +resistirExplosion(int) int
     }
 
     class AldeanoGranjero {
@@ -125,12 +133,10 @@ classDiagram
         -String tipoCultivo
         -boolean enPanico
         +trabajar() String
-        +resistirExplosion(int) int
     }
 
     class Creeper {
         -int tiempoCarga
-        +danoPorOnda(int, double) int
         +explotar() void
         +estadoVida() String
     }
@@ -141,6 +147,22 @@ classDiagram
         +findById(Long) Optional
         +findByProfesionIgnoreCase(String) List
         +findByVidaLessThan(int) List
+    }
+
+    class AldeanoService {
+        +listar() List
+        +crear() Aldeano
+        +reemplazar() Aldeano
+        +actualizarParcial() Aldeano
+        +eliminar() void
+        +listarDanables() List
+        +mensajesTrabajo() Map
+    }
+
+    class SimulacionService {
+        +simularExplosion() ExplosionResponse
+        -danoPara() int
+        -distancia() double
     }
 
     class AldeanoController {
@@ -160,6 +182,11 @@ classDiagram
         +listar()
     }
 
+    class IndexController {
+        +index()
+        +trabajo()
+    }
+
     class MinecraftException {
         <<RuntimeException>>
     }
@@ -172,6 +199,7 @@ classDiagram
         +manejarErrorDeDominio()
     }
 
+    Entidad *-- Posicion : contiene
     Entidad <|-- EntidadPasiva : herencia
     EntidadPasiva <|-- Aldeano : herencia
     Aldeano <|-- AldeanoArmero : herencia
@@ -181,11 +209,16 @@ classDiagram
     Danable <|.. Aldeano : implementa
     Danable <|.. Creeper : implementa
 
-    AldeanoController ..> AldeanoRepository : usa
-    SimulacionController ..> AldeanoRepository : usa
-    DanableController ..> AldeanoRepository : usa
-    AldeanoController ..> Aldeano : CRUD
-    SimulacionController ..> Creeper : dispara explosion
+    AldeanoController ..> AldeanoService : usa
+    DanableController ..> AldeanoService : usa
+    IndexController ..> AldeanoService : usa
+    SimulacionController ..> SimulacionService : usa
+
+    AldeanoService ..> AldeanoRepository : persiste
+    AldeanoService ..> Aldeano : valida y guarda
+    SimulacionService ..> AldeanoRepository : persiste
+    SimulacionService ..> Aldeano : aplica reglas
+    SimulacionService ..> Creeper : dispara explosion
 
     MinecraftException <|-- ReglaDeJuegoException : jerarquia de excepciones
     MinecraftException <|-- EntidadNoEncontradaException : jerarquia de excepciones
@@ -195,8 +228,10 @@ classDiagram
 Lectura del diagrama:
 
 - **Herencia:** `Entidad → EntidadPasiva → Aldeano → AldeanoArmero/AldeanoGranjero`; `Entidad → Creeper`.
+- **Composición:** `Entidad` contiene una `Posicion` embebida con tres coordenadas numéricas; se persiste en `posicion_x`, `posicion_y` y `posicion_z`.
 - **Implementación de interfaz:** `Aldeano` y `Creeper` implementan `Danable`.
-- **Uso del repositorio:** los controllers dependen de `AldeanoRepository` (o del servicio que lo envuelve).
+- **Uso del repositorio:** sólo los services (`AldeanoService` y `SimulacionService`) dependen de `AldeanoRepository`; los controllers dependen únicamente de services.
+- **Validaciones y reglas:** las validaciones y el parseo de la posición están en `AldeanoService`; las dos reglas de la explosión están en `SimulacionService`. Las entidades sólo guardan estado.
 - **Jerarquía de excepciones:** `MinecraftException` es la base; `ReglaDeJuegoException` y `EntidadNoEncontradaException` son las hijas; `ApiExceptionHandler` atiende un tipo por método.
 
 Por claridad, el diagrama muestra a `Creeper` colgando directamente de `Entidad`. En el código, `Creeper` hereda de `Entidad` a través de la clase abstracta `EntidadHostil`, que aporta los campos `daño` y `objetivo`.
@@ -256,12 +291,12 @@ Para un granjero:
 1. **Onda expansiva:** el daño que produce un Creeper es `potencia - distancia` (redondeado, nunca negativo) y es `0` para todo aldeano que esté fuera del radio de la explosión.
 2. **Mitigación por oficio:** el armero reduce el daño en `nivelHerreria * 2` por su armadura, mientras que el granjero recibe el daño completo y, si sobrevive, queda marcado con `enPanico = true`.
 
-Las dos reglas viven en el dominio:
+Las dos reglas viven en `SimulacionService`:
 
-- `Creeper.danoPorOnda(int potencia, double distancia)` implementa la onda expansiva.
-- `AldeanoArmero.resistirExplosion(int)` y `AldeanoGranjero.resistirExplosion(int)` implementan la mitigación y el cambio de estado.
+- `simularExplosion` calcula la onda expansiva: `potencia - distancia`, nunca negativa y `0` fuera del radio.
+- `danoPara` aplica la mitigación por oficio: al armero le resta `nivelHerreria * 2`; el granjero recibe el daño completo y, si sobrevive y recibió daño, queda con `enPanico = true`.
 
-El controller de simulación sólo arma la petición, recorre los aldeanos persistidos, llama a esos métodos y guarda. El resultado queda en H2: un `GET /minecraft/aldeanos` posterior muestra la vida nueva y el `enPanico` del granjero.
+El `SimulacionController` sólo delega la petición en `SimulacionService`. El service recorre los aldeanos persistidos, aplica las reglas, guarda el estado y devuelve el resultado. El `GET /minecraft/aldeanos` posterior muestra la vida nueva y el `enPanico` del granjero.
 
 Ejemplo de simulación:
 
@@ -296,7 +331,7 @@ El JSON de error tiene esta forma:
 }
 ```
 
-Las excepciones son **no comprobadas** (`RuntimeException`). El dominio puede lanzarlas desde un constructor o un método sin obligar a declarar `throws` en toda la cadena; el `@RestControllerAdvice` las convierte en HTTP. Las hermanas se distinguen por el código (`400`/`404`) y por el campo `tipo`.
+Las excepciones son **no comprobadas** (`RuntimeException`). Las lanza la capa service al validar datos o reglas; las entidades no lanzan excepciones. El `@RestControllerAdvice` las convierte en HTTP. Las hermanas se distinguen por el código (`400`/`404`) y por el campo `tipo`.
 
 ---
 
@@ -304,8 +339,7 @@ Las excepciones son **no comprobadas** (`RuntimeException`). El dominio puede la
 
 ### Sobreescritura (`@Override`, enlace dinámico en tiempo de ejecución)
 
-- `trabajar()`: declarado abstracto en `Aldeano`, sobrescrito en `AldeanoArmero` y `AldeanoGranjero`. El controller lo invoca sobre `List<Aldeano>` sin conocer la hija.
-- `resistirExplosion(int)`: declarado abstracto en `Aldeano`, sobrescrito en las dos hijas con reglas distintas. La simulación lo invoca sobre el tipo padre.
+- `trabajar()`: declarado abstracto en `Aldeano`, sobrescrito en `AldeanoArmero` y `AldeanoGranjero`. El service lo invoca sobre `List<Aldeano>` sin conocer la hija.
 - `actuar()`: declarado en `Entidad`, sobrescrito en `Aldeano`, `Creeper`, `Jugador`, `Zombie`, `Esqueleto`, `Enderman` y `Cerdo`.
 - `estadoVida()`: contrato de `Danable`; `Aldeano` y `Creeper` lo implementan con mensajes propios.
 
@@ -320,9 +354,9 @@ Las excepciones son **no comprobadas** (`RuntimeException`). El dominio puede la
 | Firma | Cambia la lista de parámetros. | Idéntica (nombre, parámetros, retorno). |
 | Resolución | Compilación (*static binding*). | Ejecución (*dynamic binding*). |
 | Anotación | No usa `@Override`. | Usa `@Override`. |
-| Ejemplo | Constructores de `AldeanoArmero`/`AldeanoGranjero`; `comerciar()`. | `trabajar()` y `resistirExplosion()`. |
+| Ejemplo | Constructores de `AldeanoArmero`/`AldeanoGranjero`; `comerciar()`. | `trabajar()` y `estadoVida()`. |
 
-**Visibilidad del constructor vacío:** el constructor sin argumentos que necesita JPA se declara `protected`. Los constructores de negocio son `public` y validan. Así Hibernate puede instanciar la fila, pero el resto del código no puede fabricar un aldeano incompleto desde afuera.
+**Visibilidad del constructor vacío:** el constructor sin argumentos que necesita JPA se declara `protected` y delega en un estado completo con `this(...)`. Los constructores de negocio son `public`. Las validaciones no viven en las entidades: `AldeanoService` valida los datos y `PosicionParser` convierte la posición textual en coordenadas numéricas antes de construir la entidad.
 
 ---
 
@@ -338,13 +372,13 @@ Las excepciones son **no comprobadas** (`RuntimeException`). El dominio puede la
 
 **Protocolo del dominio.** La interfaz propia es `Danable`, con `recibirDaño`, `getVida`, `estaVivo` y `estadoVida`. La usan `Aldeano` (familia pasiva) y `Creeper` (familia hostil), y el endpoint `GET /minecraft/danables` la recorre como `List<Danable>`. Sí puede hablar con instancias de familias distintas: en la respuesta conviven armeros, granjeros y un Creeper.
 
-**Ocultamiento.** Las reglas numéricas están en el dominio: constructores, setters validados y `@PrePersist`/`@PreUpdate`. `nivelHerreria` sólo acepta `1..5`; la vida nunca es negativa; una posición debe ser `x,y,z` numérica; `profesion`, `alimentacion` y `tipoCultivo` no pueden quedar vacíos. El `POST` ilegal del `nivelHerreria = 99` responde `400` antes de guardar, y la colección no crece: no aparece ninguna fila nueva en H2. El `@PrePersist` vuelve a validar si otra capa intentara persistir un estado imposible.
+**Ocultamiento.** Los atributos son `private` y las validaciones viven en la capa service, no en las entidades. `AldeanoService.validarDatosBase` exige `nombre`, `alimentacion` y una posición válida; `nivelHerreria` sólo acepta `1..5`; `tipoCultivo` no puede quedar vacío; la vida no puede ser negativa. `PosicionParser` convierte `x,y,z` en tres `double`, y la base guarda `posicion_x`, `posicion_y` y `posicion_z` como columnas numéricas: un `POST` con `"posicion": "abc"` responde `400` y no se guarda ninguna fila. Además, un aldeano con vida `0` está muerto: `AldeanoService.validarVidaDeAldeano` rechaza el `PUT` o `PATCH` que intente devolverle vida (`Un aldeano muerto no puede volver a tener vida`).
 
 **PUT y PATCH.** `PUT` reemplaza el recurso entero: exige los campos base y el campo propio de la hija, y no permite cambiar el subtipo. `PATCH` actualiza un subconjunto: sólo cambia los campos presentes en el JSON; un campo omitido conserva el valor anterior.
 
 **DELETE.** Borrar significa eliminar la fila (borrado físico) y responder `204`. Después, un `GET` por ese id da `404` con `EntidadNoEncontradaException`. El borrado habla con el dominio al buscar la entidad y con el repositorio al eliminarla; no hay una regla de juego que impida borrar.
 
-**Dos reglas.** Los dos hechos que cambian el estado de más de un objeto a la vez son la onda expansiva (todos los aldeanos dentro del radio pierden vida según la distancia) y la mitigación por oficio (armeros y granjeros reaccionan distinto, y el granjero queda en pánico). El recurso es `POST /minecraft/simulaciones/explosion`. El `GET /minecraft/aldeanos` posterior muestra el resultado ya persistido.
+**Dos reglas.** Los dos hechos que cambian el estado de más de un objeto a la vez son la onda expansiva (todos los aldeanos dentro del radio pierden vida según la distancia) y la mitigación por oficio (armeros y granjeros reaccionan distinto, y el granjero queda en pánico). Las dos se calculan en `SimulacionService`. El recurso es `POST /minecraft/simulaciones/explosion`. El `GET /minecraft/aldeanos` posterior muestra el resultado ya persistido.
 
 **Excepciones.** `MinecraftException` es la base. `ReglaDeJuegoException` nombra el incumplimiento de una regla o invariante; `EntidadNoEncontradaException` nombra un recurso inexistente. Son tipos distintos porque el cliente debe poder reintentar de otra forma un `404` que un `400`. El JSON de error lleva `tipo`, `mensaje`, `estado`, `ruta` y `marcaTemporal`.
 
@@ -385,6 +419,7 @@ py.edu.uc.lp3.arar_taller_git_2026
 ├── domain
 │   ├── Entidad.java
 │   ├── EntidadPasiva.java
+│   ├── Posicion.java
 │   ├── Aldeano.java
 │   ├── AldeanoArmero.java
 │   ├── AldeanoGranjero.java
@@ -399,7 +434,8 @@ py.edu.uc.lp3.arar_taller_git_2026
 │   └── AldeanoRepository.java
 ├── service
 │   ├── AldeanoService.java
-│   └── SimulacionService.java
+│   ├── SimulacionService.java
+│   └── PosicionParser.java
 └── rest
     ├── controller
     │   ├── AldeanoController.java
@@ -416,7 +452,7 @@ py.edu.uc.lp3.arar_taller_git_2026
         └── ErrorResponse.java
 ```
 
-El dominio no conoce HTTP ni JPA más allá de las anotaciones de mapeo. El controller traduce HTTP; el repositorio traduce filas; las reglas del juego viven en las clases del dominio.
+El dominio no conoce HTTP ni JPA más allá de las anotaciones de mapeo. El controller traduce HTTP; el repositorio traduce filas; las validaciones, las reglas del juego y las excepciones viven en los services. Las entidades sólo guardan estado.
 
 ---
 
@@ -429,10 +465,12 @@ El dominio no conoce HTTP ni JPA más allá de las anotaciones de mapeo. El cont
 5. `GET /minecraft/aldeanos/{id}` → coincide.
 6. `PUT` o `PATCH` → el campo cambia y sigue cambiado después de otro `GET`.
 7. `POST` ilegal (`nivelHerreria: 99`) → `400`; la colección no creció.
-8. `DELETE /minecraft/aldeanos/{id}` → `204`; el `GET` posterior da `404`.
-9. `GET /minecraft/danables` → mensajes de la interfaz con armeros, granjeros y un Creeper.
-10. `POST /minecraft/simulaciones/explosion` → vida reducida y `enPanico`; el `GET` posterior lo confirma.
-11. Cada excepción hija: `POST` ilegal (`400 REGLA_DE_JUEGO`) e id inexistente (`404 ENTIDAD_NO_ENCONTRADA`).
+8. `POST` o `PATCH` con `posicion: "abc"` → `400 REGLA_DE_JUEGO`; la colección no creció y en H2 no se guardó texto en las columnas de posición.
+9. `DELETE /minecraft/aldeanos/{id}` → `204`; el `GET` posterior da `404`.
+10. `GET /minecraft/danables` → mensajes de la interfaz con armeros, granjeros y un Creeper.
+11. `POST /minecraft/simulaciones/explosion` → vida reducida y `enPanico`; el `GET` posterior lo confirma.
+12. Si la explosión dejó a un aldeano en `0`, un `PATCH` con `vida: 20` → `400 REGLA_DE_JUEGO` (`Un aldeano muerto no puede volver a tener vida`).
+13. Cada excepción hija: `POST` ilegal (`400 REGLA_DE_JUEGO`) e id inexistente (`404 ENTIDAD_NO_ENCONTRADA`).
 
 Consola H2: <http://localhost:8080/h2-console>, JDBC URL `jdbc:h2:file:./data/entidades`, usuario `sa`, contraseña vacía. La tabla `aldeanos` muestra el estado persistido.
 

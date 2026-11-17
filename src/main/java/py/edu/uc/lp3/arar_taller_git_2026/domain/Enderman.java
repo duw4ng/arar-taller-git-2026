@@ -3,7 +3,7 @@ package py.edu.uc.lp3.arar_taller_git_2026.domain;
 public class Enderman extends EntidadHostil {
     private boolean puedeTeletransportarse;
 
-    public Enderman(String nombre, int vida, String posicion, int daño, String objetivo, boolean puedeTeletransportarse) {
+    public Enderman(String nombre, int vida, Posicion posicion, int daño, String objetivo, boolean puedeTeletransportarse) {
         super(nombre, vida, posicion, daño, objetivo);
         this.puedeTeletransportarse = puedeTeletransportarse;
     }
@@ -16,7 +16,7 @@ public class Enderman extends EntidadHostil {
         this.puedeTeletransportarse = puedeTeletransportarse;
     }
 
-    public void teletransportarse(String nuevaPosicion) {
+    public void teletransportarse(Posicion nuevaPosicion) {
         if (getVida() <= 0) return;
         if (!puedeTeletransportarse) {
             System.out.println(getNombre() + " no puede teletransportarse actualmente.");

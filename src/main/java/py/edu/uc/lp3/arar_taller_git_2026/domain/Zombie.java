@@ -3,7 +3,7 @@ package py.edu.uc.lp3.arar_taller_git_2026.domain;
 public class Zombie extends EntidadHostil {
     private boolean esHostil;
 
-    public Zombie(String nombre, int vida, String posicion, int daño, String objetivo, boolean esHostil) {
+    public Zombie(String nombre, int vida, Posicion posicion, int daño, String objetivo, boolean esHostil) {
         super(nombre, vida, posicion, daño, objetivo);
         this.esHostil = esHostil;
     }

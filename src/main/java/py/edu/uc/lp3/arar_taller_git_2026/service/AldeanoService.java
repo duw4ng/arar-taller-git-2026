@@ -1,7 +1,10 @@
 package py.edu.uc.lp3.arar_taller_git_2026.service;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -10,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import py.edu.uc.lp3.arar_taller_git_2026.domain.Aldeano;
 import py.edu.uc.lp3.arar_taller_git_2026.domain.AldeanoArmero;
 import py.edu.uc.lp3.arar_taller_git_2026.domain.AldeanoGranjero;
+import py.edu.uc.lp3.arar_taller_git_2026.domain.Creeper;
+import py.edu.uc.lp3.arar_taller_git_2026.domain.Danable;
+import py.edu.uc.lp3.arar_taller_git_2026.domain.Posicion;
 import py.edu.uc.lp3.arar_taller_git_2026.domain.exception.EntidadNoEncontradaException;
 import py.edu.uc.lp3.arar_taller_git_2026.domain.exception.ReglaDeJuegoException;
 import py.edu.uc.lp3.arar_taller_git_2026.repository.AldeanoRepository;
@@ -37,6 +43,20 @@ public class AldeanoService {
         return repository.findByProfesionIgnoreCase(profesion.trim());
     }
 
+    public List<Danable> listarDanables() {
+        List<Danable> danables = new ArrayList<>(listar());
+        danables.add(new Creeper("Creeper de muestra", 20, new Posicion(0, 64, 0), 10, "aldeanos", 3));
+        return danables;
+    }
+
+    public Map<String, String> mensajesTrabajo() {
+        Map<String, String> respuesta = new LinkedHashMap<>();
+        for (Aldeano aldeano : listar()) {
+            respuesta.put(aldeano.getNombre(), aldeano.trabajar());
+        }
+        return respuesta;
+    }
+
     public Aldeano buscar(Long id) {
         if (id == null) {
             throw new ReglaDeJuegoException("El identificador no puede ser nulo.");
@@ -47,20 +67,20 @@ public class AldeanoService {
 
     @Transactional
     public Aldeano crear(AldeanoRequest solicitud) {
-        validarDatosBase(solicitud);
+        Posicion posicion = validarDatosBase(solicitud);
         String tipo = normalizarTipo(solicitud.tipo());
         Aldeano aldeano = switch (tipo) {
             case "ARMERO" -> new AldeanoArmero(
-                    solicitud.nombre(),
+                    solicitud.nombre().trim(),
                     solicitud.vida(),
-                    solicitud.posicion(),
-                    solicitud.alimentacion(),
+                    posicion,
+                    solicitud.alimentacion().trim(),
                     nivelHerreriaRequerido(solicitud.nivelHerreria()));
             case "GRANJERO" -> new AldeanoGranjero(
-                    solicitud.nombre(),
+                    solicitud.nombre().trim(),
                     solicitud.vida(),
-                    solicitud.posicion(),
-                    solicitud.alimentacion(),
+                    posicion,
+                    solicitud.alimentacion().trim(),
                     tipoCultivoRequerido(solicitud.tipoCultivo()));
             default -> throw new ReglaDeJuegoException("El tipo de aldeano debe ser ARMERO o GRANJERO.");
         };
@@ -70,17 +90,18 @@ public class AldeanoService {
     @Transactional
     public Aldeano reemplazar(Long id, AldeanoRequest solicitud) {
         Aldeano actual = buscar(id);
-        validarDatosBase(solicitud);
+        Posicion posicion = validarDatosBase(solicitud);
         String tipoSolicitado = solicitud.tipo() == null || solicitud.tipo().isBlank()
                 ? tipoDe(actual)
                 : normalizarTipo(solicitud.tipo());
         if (!tipoSolicitado.equals(tipoDe(actual))) {
             throw new ReglaDeJuegoException("No se permite cambiar el tipo de un aldeano existente.");
         }
-        actual.setNombre(solicitud.nombre());
+        validarVidaDeAldeano(actual, solicitud.vida());
+        actual.setNombre(solicitud.nombre().trim());
         actual.setVida(solicitud.vida());
-        actual.setPosicion(solicitud.posicion());
-        actual.setAlimentacion(solicitud.alimentacion());
+        actual.setPosicion(posicion);
+        actual.setAlimentacion(solicitud.alimentacion().trim());
         if (actual instanceof AldeanoArmero armero) {
             armero.setNivelHerreria(nivelHerreriaRequerido(solicitud.nivelHerreria()));
         } else if (actual instanceof AldeanoGranjero granjero) {
@@ -102,22 +123,28 @@ public class AldeanoService {
             }
         }
         if (solicitud.nombre() != null) {
-            actual.setNombre(solicitud.nombre());
+            validarTexto(solicitud.nombre(), "El nombre");
+            actual.setNombre(solicitud.nombre().trim());
         }
         if (solicitud.vida() != null) {
+            if (solicitud.vida() < 0) {
+                throw new ReglaDeJuegoException("La vida no puede ser negativa.");
+            }
+            validarVidaDeAldeano(actual, solicitud.vida());
             actual.setVida(solicitud.vida());
         }
         if (solicitud.posicion() != null) {
-            actual.setPosicion(solicitud.posicion());
+            actual.setPosicion(PosicionParser.parsear(solicitud.posicion()));
         }
         if (solicitud.alimentacion() != null) {
-            actual.setAlimentacion(solicitud.alimentacion());
+            validarTexto(solicitud.alimentacion(), "La alimentación");
+            actual.setAlimentacion(solicitud.alimentacion().trim());
         }
         if (actual instanceof AldeanoArmero armero && solicitud.nivelHerreria() != null) {
-            armero.setNivelHerreria(solicitud.nivelHerreria());
+            armero.setNivelHerreria(nivelHerreriaRequerido(solicitud.nivelHerreria()));
         }
         if (actual instanceof AldeanoGranjero granjero && solicitud.tipoCultivo() != null) {
-            granjero.setTipoCultivo(solicitud.tipoCultivo());
+            granjero.setTipoCultivo(tipoCultivoRequerido(solicitud.tipoCultivo()));
         }
         return repository.save(actual);
     }
@@ -128,21 +155,28 @@ public class AldeanoService {
         repository.delete(actual);
     }
 
-    private void validarDatosBase(AldeanoRequest solicitud) {
+    private Posicion validarDatosBase(AldeanoRequest solicitud) {
         if (solicitud == null) {
             throw new ReglaDeJuegoException("El cuerpo de la solicitud no puede estar vacío.");
         }
-        if (solicitud.nombre() == null || solicitud.nombre().isBlank()) {
-            throw new ReglaDeJuegoException("El nombre es obligatorio.");
-        }
+        validarTexto(solicitud.nombre(), "El nombre");
         if (solicitud.vida() == null || solicitud.vida() < 0) {
             throw new ReglaDeJuegoException("La vida es obligatoria y no puede ser negativa.");
         }
-        if (solicitud.posicion() == null || solicitud.posicion().isBlank()) {
-            throw new ReglaDeJuegoException("La posición es obligatoria.");
+        Posicion posicion = PosicionParser.parsear(solicitud.posicion());
+        validarTexto(solicitud.alimentacion(), "La alimentación");
+        return posicion;
+    }
+
+    private void validarTexto(String valor, String campo) {
+        if (valor == null || valor.isBlank()) {
+            throw new ReglaDeJuegoException(campo + " es obligatorio.");
         }
-        if (solicitud.alimentacion() == null || solicitud.alimentacion().isBlank()) {
-            throw new ReglaDeJuegoException("La alimentación es obligatoria.");
+    }
+
+    private void validarVidaDeAldeano(Aldeano actual, int nuevaVida) {
+        if (!actual.estaVivo() && nuevaVida > 0) {
+            throw new ReglaDeJuegoException("Un aldeano muerto no puede volver a tener vida.");
         }
     }
 
@@ -167,13 +201,14 @@ public class AldeanoService {
         if (nivelHerreria == null) {
             throw new ReglaDeJuegoException("El nivel de herrería es obligatorio para un armero.");
         }
+        if (nivelHerreria < 1 || nivelHerreria > 5) {
+            throw new ReglaDeJuegoException("El nivel de herrería debe estar entre 1 y 5.");
+        }
         return nivelHerreria;
     }
 
     private String tipoCultivoRequerido(String tipoCultivo) {
-        if (tipoCultivo == null || tipoCultivo.isBlank()) {
-            throw new ReglaDeJuegoException("El tipo de cultivo es obligatorio para un granjero.");
-        }
-        return tipoCultivo;
+        validarTexto(tipoCultivo, "El tipo de cultivo");
+        return tipoCultivo.trim();
     }
 }

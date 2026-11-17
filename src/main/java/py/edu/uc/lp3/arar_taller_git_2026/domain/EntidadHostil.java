@@ -1,13 +1,12 @@
 package py.edu.uc.lp3.arar_taller_git_2026.domain;
 
-// Subclase abstracta para criaturas hostiles
 public abstract class EntidadHostil extends Entidad {
     private int daño;
     private String objetivo;
 
-    public EntidadHostil(String nombre, int vida, String posicion, int daño, String objetivo) {
+    public EntidadHostil(String nombre, int vida, Posicion posicion, int daño, String objetivo) {
         super(nombre, vida, posicion);
-        setDaño(daño);
+        this.daño = daño;
         this.objetivo = objetivo;
     }
 
@@ -16,9 +15,6 @@ public abstract class EntidadHostil extends Entidad {
     }
 
     public void setDaño(int daño) {
-        if (daño < 0) {
-            throw new IllegalArgumentException("El daño no puede ser negativo.");
-        }
         this.daño = daño;
     }
 

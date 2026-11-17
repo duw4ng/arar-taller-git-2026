@@ -1,24 +1,19 @@
 package py.edu.uc.lp3.arar_taller_git_2026.domain;
 
 import jakarta.persistence.MappedSuperclass;
-import py.edu.uc.lp3.arar_taller_git_2026.domain.exception.ReglaDeJuegoException;
 
-// Subclase abstracta para criaturas pacíficas
 @MappedSuperclass
 public abstract class EntidadPasiva extends Entidad {
 
     private String alimentacion;
 
     protected EntidadPasiva() {
-        this("Entidad Pasiva", 20, "(0,0,0)", "Pan");
+        this("Entidad Pasiva", 20, new Posicion(0, 64, 0), "Pan");
     }
 
-    public EntidadPasiva(String nombre, int vida, String posicion, String alimentacion) {
+    public EntidadPasiva(String nombre, int vida, Posicion posicion, String alimentacion) {
         super(nombre, vida, posicion);
-        if (alimentacion == null || alimentacion.trim().isEmpty()) {
-            throw new ReglaDeJuegoException("La alimentación no puede estar vacía.");
-        }
-        this.alimentacion = alimentacion.trim();
+        this.alimentacion = alimentacion;
     }
 
     public String getAlimentacion() {
@@ -26,23 +21,12 @@ public abstract class EntidadPasiva extends Entidad {
     }
 
     public void setAlimentacion(String alimentacion) {
-        if (alimentacion == null || alimentacion.trim().isEmpty()) {
-            throw new ReglaDeJuegoException("La alimentación no puede estar vacía.");
-        }
-        this.alimentacion = alimentacion.trim();
+        this.alimentacion = alimentacion;
     }
 
     public void huir() {
         if (!estaVivo()) {
             return;
-        }
-    }
-
-    @Override
-    protected void validar() {
-        super.validar();
-        if (alimentacion == null || alimentacion.trim().isEmpty()) {
-            throw new ReglaDeJuegoException("La alimentación no puede estar vacía.");
         }
     }
 }

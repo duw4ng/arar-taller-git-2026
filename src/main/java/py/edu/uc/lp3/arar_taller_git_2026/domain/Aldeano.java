@@ -8,7 +8,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-import py.edu.uc.lp3.arar_taller_git_2026.domain.exception.ReglaDeJuegoException;
 
 @Entity
 @Table(name = "aldeanos")
@@ -24,15 +23,12 @@ public abstract class Aldeano extends EntidadPasiva implements Danable {
     private String profesion;
 
     protected Aldeano() {
-        this("Aldeano Desconocido", 20, "(0,0,0)", "Pan", "Sin Profesion");
+        this("Aldeano Desconocido", 20, new Posicion(0, 64, 0), "Pan", "Sin Profesion");
     }
 
-    public Aldeano(String nombre, int vida, String posicion, String alimentacion, String profesion) {
+    public Aldeano(String nombre, int vida, Posicion posicion, String alimentacion, String profesion) {
         super(nombre, vida, posicion, alimentacion);
-        if (profesion == null || profesion.trim().isEmpty()) {
-            throw new ReglaDeJuegoException("La profesión no puede estar vacía.");
-        }
-        this.profesion = profesion.trim();
+        this.profesion = profesion;
     }
 
     public String getProfesion() {
@@ -40,10 +36,7 @@ public abstract class Aldeano extends EntidadPasiva implements Danable {
     }
 
     public void setProfesion(String profesion) {
-        if (profesion == null || profesion.trim().isEmpty()) {
-            throw new ReglaDeJuegoException("La profesión no puede estar vacía.");
-        }
-        this.profesion = profesion.trim();
+        this.profesion = profesion;
     }
 
     public String comerciar() {
@@ -57,11 +50,8 @@ public abstract class Aldeano extends EntidadPasiva implements Danable {
         if (!estaVivo()) {
             return "No es posible comerciar con un aldeano fuera de combate.";
         }
-        if (item == null || item.trim().isEmpty()) {
-            throw new ReglaDeJuegoException("El ítem a comerciar no puede estar vacío.");
-        }
-        if (cantidad <= 0) {
-            throw new ReglaDeJuegoException("La cantidad a comerciar debe ser mayor a 0.");
+        if (item == null || item.isBlank() || cantidad <= 0) {
+            return "No es posible comerciar: el ítem y la cantidad deben ser válidos.";
         }
         return getNombre() + " (" + profesion + ") intercambia " + cantidad + "x " + item + " por esmeraldas.";
     }
@@ -75,18 +65,8 @@ public abstract class Aldeano extends EntidadPasiva implements Danable {
 
     public abstract String trabajar();
 
-    public abstract int resistirExplosion(int danoBase);
-
     @Override
     public String estadoVida() {
         return getNombre() + " (" + profesion + ") tiene " + getVida() + " de vida.";
-    }
-
-    @Override
-    protected void validar() {
-        super.validar();
-        if (profesion == null || profesion.trim().isEmpty()) {
-            throw new ReglaDeJuegoException("La profesión no puede estar vacía.");
-        }
     }
 }
