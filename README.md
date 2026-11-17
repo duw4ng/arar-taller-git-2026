@@ -5,7 +5,7 @@ Servicio HTTP con Spring Boot sobre el modelado de **Minecraft**. Persiste en **
 - **Autor:** Alexandre Avalos (`duw4ng`)
 - **Dominio:** Minecraft
 - **Licencia:** Apache 2.0 (ver [`LICENSE`](LICENSE))
-- **Commit de la solución:** <https://github.com/duw4ng/arar-taller-git-2026/commit/dafa0f16ae8194ddf0e505892a9be367eadb975b>
+- **Commit de la solución:** <https://github.com/duw4ng/arar-taller-git-2026/commit/f837d12a15ceedbe5d82f28b33ba4ec753795616>
 - **Enunciado:** <https://github.com/alefq/afq-taller-git-2024/blob/main/docs/ejercicio-poo-08-crud-h2-insomnia-2026-10-28.md>
 - **Rúbrica:** <https://github.com/alefq/afq-taller-git-2024/blob/main/docs/RUBRICA-ejercicios-lp3-2026.md>
 
