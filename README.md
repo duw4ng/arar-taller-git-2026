@@ -1,9 +1,11 @@
-# arar-taller-git-2026 — POO-08: CRUD REST, H2, reglas de juego y excepciones
+# arar-taller-git-2026 — POO-08 + POO-09: CRUD REST, H2, reglas de juego, excepciones y OpenAPI
 
-Servicio HTTP con Spring Boot sobre el modelado de **Minecraft**. Persiste en **H2** la familia de los aldeanos, expone un CRUD REST completo, ejecuta una simulación de explosión con dos reglas de negocio, y traduce una jerarquía de excepciones del dominio a respuestas HTTP distintas.
+Servicio HTTP con Spring Boot sobre el modelado de **Minecraft**. Persiste en **H2** la familia de los aldeanos, expone un CRUD REST completo, ejecuta una simulación de explosión con dos reglas de negocio, traduce una jerarquía de excepciones del dominio a respuestas HTTP distintas y publica su contrato con **OpenAPI 3.1 y Swagger UI**.
 
 - **Autor:** Alexandre Avalos (`duw4ng`)
 - **Dominio:** Minecraft
+- **Spring Boot:** 4.1.1 · **springdoc-openapi:** 3.1.1 · **Java:** 21
+- **Contrato:** `/v3/api-docs` (JSON), `/v3/api-docs.yaml` (YAML), `/swagger-ui.html` (UI)
 - **Licencia:** Apache 2.0 (ver [`LICENSE`](LICENSE))
 - **Commit de la solución:** <https://github.com/duw4ng/arar-taller-git-2026/commit/f837d12a15ceedbe5d82f28b33ba4ec753795616>
 - **Enunciado:** <https://github.com/alefq/afq-taller-git-2024/blob/main/docs/ejercicio-poo-08-crud-h2-insomnia-2026-10-28.md>
@@ -17,12 +19,18 @@ Servicio HTTP con Spring Boot sobre el modelado de **Minecraft**. Persiste en **
 ./mvnw spring-boot:run
 ```
 
-El servicio queda en <http://localhost:8080>. La colección de Insomnia se importa desde `insomnia/POO-08-arar-taller-git-2026.json`.
+El servicio queda en <http://localhost:8082>. La colección de Insomnia se importa desde `insomnia/POO-08-arar-taller-git-2026.json`.
+
+Con el servicio levantado, el contrato y la UI están en:
+
+- JSON: <http://localhost:8082/v3/api-docs>
+- YAML: <http://localhost:8082/v3/api-docs.yaml>
+- Swagger UI: <http://localhost:8082/swagger-ui.html>
 
 Comandos útiles:
 
 ```bash
-./mvnw test          # prueba de contexto de Spring
+./mvnw test          # prueba de contexto de Spring y generación del contrato JSON/YAML
 ./mvnw clean package # empaqueta target/arar-taller-git-2026-0.0.1-SNAPSHOT.jar
 ```
 
@@ -46,7 +54,7 @@ Archivo: `src/main/resources/application.properties`.
 | `spring.h2.console.enabled` | `true` | Habilita la consola web de H2. |
 | `spring.h2.console.path` | `/h2-console` | URL de la consola. |
 
-**Consola H2:** abrir <http://localhost:8080/h2-console>, usar `jdbc:h2:file:./data/entidades`, usuario `sa` y contraseña vacía. La tabla persistida se llama `aldeanos`. En Spring Boot 4 la consola ya no sale del driver H2: requiere la dependencia explícita `org.springframework.boot:spring-boot-h2console` (ver `pom.xml`); sin ese módulo las propiedades se ignoran y `/h2-console` da 404.
+**Consola H2:** abrir <http://localhost:8082/h2-console>, usar `jdbc:h2:file:./data/entidades`, usuario `sa` y contraseña vacía. La tabla persistida se llama `aldeanos`. En Spring Boot 4 la consola ya no sale del driver H2: requiere la dependencia explícita `org.springframework.boot:spring-boot-h2console` (ver `pom.xml`); sin ese módulo las propiedades se ignoran y `/h2-console` da 404.
 
 **Si mañana se cambia H2 por otra base:** se tocan `pom.xml` (driver), `application.properties` (URL, usuario, contraseña y dialecto) y, si se usa, la herramienta de migraciones. Las entidades, el repositorio, los servicios con las reglas, los controllers y los DTOs se quedan quietos.
 
@@ -240,19 +248,34 @@ Por claridad, el diagrama muestra a `Creeper` colgando directamente de `Entidad`
 
 ## 4. API REST
 
-| Método | URL | Qué hace | Éxito |
-|---|---|---|---|
-| `GET` | `/` | Confirma que el servicio vive. | `200` |
-| `GET` | `/minecraft/trabajo` | Lista los mensajes polimórficos de `trabajar()` de lo persistido. | `200` |
-| `POST` | `/minecraft/aldeanos` | Crea un aldeano; el `tipo` del JSON elige la hija. | `201 Created` |
-| `GET` | `/minecraft/aldeanos` | Lista la colección persistida. Acepta `?profesion=Armero`. | `200` |
-| `GET` | `/minecraft/aldeanos/{id}` | Lee un aldeano por su id. | `200` / `404` |
-| `PUT` | `/minecraft/aldeanos/{id}` | Reemplaza el recurso entero. El tipo no puede cambiar. | `200` |
-| `PATCH` | `/minecraft/aldeanos/{id}` | Actualiza sólo los campos presentes. | `200` |
-| `DELETE` | `/minecraft/aldeanos/{id}` | Borra físicamente la fila. | `204 No Content` |
-| `GET` | `/minecraft/danables` | Endpoint que usa la interfaz `Danable`. | `200` |
-| `POST` | `/minecraft/simulaciones/explosion` | Ejecuta y persiste la simulación de explosión. | `200` |
-| `GET` | `/h2-console` | Consola web de H2. | UI |
+| Método | URL | Qué hace | Éxito | Efecto en H2 |
+|---|---|---|---|---|
+| `GET` | `/` | Confirma que el servicio vive. | `200` | Ninguno |
+| `GET` | `/minecraft/trabajo` | Lista los mensajes polimórficos de `trabajar()` de lo persistido. | `200` | Ninguno |
+| `POST` | `/minecraft/aldeanos` | Crea un aldeano; el `tipo` del JSON elige la hija. | `201 Created` | **Inserta** |
+| `GET` | `/minecraft/aldeanos` | Lista la colección persistida. Acepta `?profesion=Armero`. | `200` | Ninguno |
+| `GET` | `/minecraft/aldeanos/{id}` | Lee un aldeano por su id. | `200` / `404` | Ninguno |
+| `PUT` | `/minecraft/aldeanos/{id}` | Reemplaza el recurso entero. El tipo no puede cambiar. | `200` | **Reemplaza** |
+| `PATCH` | `/minecraft/aldeanos/{id}` | Actualiza sólo los campos presentes. | `200` | **Actualiza** |
+| `DELETE` | `/minecraft/aldeanos/{id}` | Borra físicamente la fila. | `204 No Content` | **Borra** |
+| `GET` | `/minecraft/danables` | Endpoint que usa la interfaz `Danable`. | `200` | Ninguno |
+| `POST` | `/minecraft/simulaciones/explosion` | Ejecuta y persiste la simulación de explosión. | `200` | **Escribe**: `saveAll` guarda la vida nueva de todos los aldeanos |
+| `GET` | `/minecraft/escenarios/diagnostico` | Primer contacto leyendo `/v3/api-docs` de A2 y A3. | `200` | Ninguno |
+| `POST` | `/minecraft/escenarios/explosiones-cruzadas` | Orquesta A2 y A3; guarda la jugada sólo si ambos aceptan. | `201` / `502` | **Escribe**: inserta en `jugadas_cruzadas` sólo con doble aceptación |
+| `GET` | `/minecraft/escenarios/explosiones-cruzadas` | Lista las jugadas cruzadas ya persistidas. | `200` | Ninguno |
+| `GET` | `/h2-console` | Consola web de H2. | UI | Ninguno |
+
+### 4.1 Contrato OpenAPI y Swagger UI
+
+La misma API está descrita en OpenAPI 3.1.0; los DTOs, las entidades polimórficas, los cuerpos, las restricciones, los ejemplos y los códigos de error salen de las anotaciones de los controllers y DTOs.
+
+| Recurso | URL | Uso |
+|---|---|---|
+| JSON | `GET /v3/api-docs` | Contrato completo para clientes o generadores de código. |
+| YAML | `GET /v3/api-docs.yaml` | El mismo contrato en YAML. |
+| Swagger UI | `GET /swagger-ui.html` | Interfaz interactiva; redirige a `/swagger-ui/index.html`. |
+
+El `info.description` del contrato y la operación de simulación repiten la tabla de efectos en H2: `POST`/`PUT`/`PATCH`/`DELETE` de aldeanos y `POST /minecraft/simulaciones/explosion` escriben; los `GET` sólo leen. La simulación **no** se presenta como una validación sin efectos.
 
 Ejemplo de creación:
 
@@ -284,6 +307,43 @@ Para un granjero:
 
 `PUT` exige todos los campos de base más el campo de la hija. `PATCH` sólo aplica los campos no nulos; un campo omitido conserva el valor anterior.
 
+### 4.2 POO-09 — APIs cruzadas (A1/A2/A3)
+
+| Rol | Responsable | Servicio | Regla que aporta | Efecto en su H2 |
+|---|---|---|---|---|
+| **A1** | Alexandre Avalos | este repositorio, puerto `8082` | orquesta el escenario y guarda la jugada | **Inserta** en `jugadas_cruzadas` sólo si A2 y A3 aceptan |
+| **A2** | Elias Pont | <https://github.com/eliasleonardo11-dotcom/EP-taller-git-2026>, commit [`15f97c7`](https://github.com/eliasleonardo11-dotcom/EP-taller-git-2026/commit/15f97c7), puerto `8080` | Creeper y Zombie vivos, `0 <= distancia <= rango`; daño `max(1, 12 - 3 * distancia)`; Creeper queda en vida `0` | su H2 cambia cuando acepta |
+| **A3** | Marcelo Romero | commit [`6ccc6ea`](https://github.com/mnri1904/mnri-taller-git-2026/commit/6ccc6ea06c82cc5fb684b8d299ec82cc55e0721d), puerto `8081` | Creeper vivo detona una vez; daño `12 - 3 * floor(distancia)` a Zombies y Cerdos a `<= 3` bloques | su H2 cambia cuando acepta |
+
+Configuración previa (los valores por defecto ya apuntan a los puertos acordados; las variables sólo sirven para sobrescribirlos):
+
+```bash
+export ELIAS_API_URL=http://localhost:8080
+export MARCELO_API_URL=http://localhost:8081
+export PORT=8082
+./mvnw spring-boot:run
+```
+
+El primer contacto con cada API es leer su OpenAPI:
+
+```bash
+curl http://localhost:8082/minecraft/escenarios/diagnostico
+```
+
+Escenario feliz (los ids deben existir previamente en A2 y A3):
+
+```bash
+curl -X POST http://localhost:8082/minecraft/escenarios/explosiones-cruzadas \
+  -H 'Content-Type: application/json' \
+  -d '{"creeperEliasId":1,"zombieEliasId":2,"distanciaElias":1,"creeperMarceloId":1}'
+```
+
+Si los dos devuelven `200`, A1 responde `201` y la fila queda en `GET /minecraft/escenarios/explosiones-cruzadas`. Si uno rechaza, A1 responde `502 COMPANERO_RECHAZO` con `origen` (`A2 Elias` o `A3 Marcelo`), `estadoCompanero` y `codigoCompanero`; **A1 no guarda nada**. Los rechazos traducidos son `FUERA_DE_ALCANCE` de A2 y `ENTIDAD_DESAPARECIDA`/`EXPLOSION_INVALIDA` de A3. Aviso: A2 y A3 sí consumen sus entidades cuando aceptan, así que un reintento necesita ids nuevos en esos servicios.
+
+Si alguna variable se define vacía → `503 COMPANERO_NO_CONFIGURADO`.
+
+Entregables relacionados: `docs/especificaciones-poo-09.md`, `docs/respuestas-ejemplo-poo-09.md` e `insomnia/POO-09-arar-taller-git-2026.json`.
+
 ---
 
 ## 5. Las dos reglas de negocio
@@ -298,7 +358,7 @@ Las dos reglas viven en `SimulacionService`:
 
 El `SimulacionController` sólo delega la petición en `SimulacionService`. El service recorre los aldeanos persistidos, aplica las reglas, guarda el estado y devuelve el resultado. El `GET /minecraft/aldeanos` posterior muestra la vida nueva y el `enPanico` del granjero.
 
-Ejemplo de simulación:
+Ejemplo de simulación **aceptada** (`200`):
 
 ```json
 {
@@ -309,6 +369,20 @@ Ejemplo de simulación:
 }
 ```
 
+Con un armero de nivel 2 a 5 bloques recibe `25 - (2 * 2) = 21` de daño y un granjero a 25 bloques recibe `5`; si el granjero sobrevive queda `enPanico = true`. Esa vida se guarda con `repository.saveAll(aldeanos)`: **la simulación modifica H2**, no es una validación sin efectos. El `GET /minecraft/aldeanos` posterior muestra el estado persistido.
+
+Ejemplo **rechazado** (`400 REGLA_DE_JUEGO`):
+
+```json
+{
+  "potencia": 0,
+  "radio": 30,
+  "tiempoCarga": 3
+}
+```
+
+Se rechaza porque `SimulacionService` exige `potencia > 0`; en ese caso no se guarda nada. El contrato expone ambos ejemplos en el `requestBody` de `POST /minecraft/simulaciones/explosion`, junto con un ejemplo de respuesta `200` y otro de error `400`.
+
 ---
 
 ## 6. Jerarquía de excepciones y handlers
@@ -318,6 +392,8 @@ Ejemplo de simulación:
 | `MinecraftException` | Base del dominio; fallback. | `manejarErrorDeDominio` | `400` | `ERROR_DE_DOMINIO` |
 | `ReglaDeJuegoException` | Se viola un invariante o una regla del juego. | `manejarReglaDeJuego` | `400` | `REGLA_DE_JUEGO` |
 | `EntidadNoEncontradaException` | No existe el recurso pedido. | `manejarEntidadNoEncontrada` | `404` | `ENTIDAD_NO_ENCONTRADA` |
+| `EliasRechazoException` / `MarceloRechazoException` | A2 o A3 rechazó el escenario. | `manejarRechazoDeCompanero` | `502` | `COMPANERO_RECHAZO` (con `origen`) |
+| `CompaneroNoConfiguradoException` | Falta alguna URL base de compañero. | `manejarCompaneroNoConfigurado` | `503` | `COMPANERO_NO_CONFIGURADO` |
 
 El JSON de error tiene esta forma:
 
@@ -332,6 +408,21 @@ El JSON de error tiene esta forma:
 ```
 
 Las excepciones son **no comprobadas** (`RuntimeException`). Las lanza la capa service al validar datos o reglas; las entidades no lanzan excepciones. El `@RestControllerAdvice` las convierte en HTTP. Las hermanas se distinguen por el código (`400`/`404`) y por el campo `tipo`.
+
+Para el challenge POO-09, un rechazo de compañero agrega el origen:
+
+```json
+{
+  "tipo": "COMPANERO_RECHAZO",
+  "origen": "A2 Elias",
+  "mensaje": "A2 (Elias) rechazó la explosión [FUERA_DE_ALCANCE]: ...",
+  "estado": 502,
+  "estadoCompanero": 422,
+  "codigoCompanero": "FUERA_DE_ALCANCE",
+  "ruta": "/minecraft/escenarios/explosiones-cruzadas",
+  "marcaTemporal": "2026-11-22T22:11:00.123456"
+}
+```
 
 ---
 
@@ -392,7 +483,7 @@ Archivo versionado: `insomnia/POO-08-arar-taller-git-2026.json`.
 
 **Entorno:** seleccionar `Base Environment` y revisar:
 
-- `baseUrl = http://localhost:8080`
+- `baseUrl = http://localhost:8082`
 - `aldeanoId = 1` (se actualiza con el id que devuelve el `POST`)
 
 **Orden recomendado:**
@@ -437,6 +528,8 @@ py.edu.uc.lp3.arar_taller_git_2026
 │   ├── SimulacionService.java
 │   └── PosicionParser.java
 └── rest
+    ├── config
+    │   └── OpenApiConfig.java
     ├── controller
     │   ├── AldeanoController.java
     │   ├── SimulacionController.java
@@ -452,7 +545,7 @@ py.edu.uc.lp3.arar_taller_git_2026
         └── ErrorResponse.java
 ```
 
-El dominio no conoce HTTP ni JPA más allá de las anotaciones de mapeo. El controller traduce HTTP; el repositorio traduce filas; las validaciones, las reglas del juego y las excepciones viven en los services. Las entidades sólo guardan estado.
+El dominio no conoce HTTP ni JPA más allá de las anotaciones de mapeo y de las anotaciones `@Schema` de documentación. El controller traduce HTTP y expone `@Operation`, `@ApiResponses` y ejemplos; el repositorio traduce filas; las validaciones, las reglas del juego y las excepciones viven en los services. Las entidades sólo guardan estado. `OpenApiConfig` centraliza el título, las dos reglas, los ejemplos y la tabla de efectos en H2 del contrato.
 
 ---
 
@@ -471,8 +564,9 @@ El dominio no conoce HTTP ni JPA más allá de las anotaciones de mapeo. El cont
 11. `POST /minecraft/simulaciones/explosion` → vida reducida y `enPanico`; el `GET` posterior lo confirma.
 12. Si la explosión dejó a un aldeano en `0`, un `PATCH` con `vida: 20` → `400 REGLA_DE_JUEGO` (`Un aldeano muerto no puede volver a tener vida`).
 13. Cada excepción hija: `POST` ilegal (`400 REGLA_DE_JUEGO`) e id inexistente (`404 ENTIDAD_NO_ENCONTRADA`).
+14. Abrir `/swagger-ui.html`: cada método muestra su cuerpo, restricciones, ejemplos aceptado/rechazado y si escribe en H2. El mismo contenido está en `/v3/api-docs` y `/v3/api-docs.yaml`.
 
-Consola H2: <http://localhost:8080/h2-console>, JDBC URL `jdbc:h2:file:./data/entidades`, usuario `sa`, contraseña vacía. La tabla `aldeanos` muestra el estado persistido.
+Consola H2: <http://localhost:8082/h2-console>, JDBC URL `jdbc:h2:file:./data/entidades`, usuario `sa`, contraseña vacía. La tabla `aldeanos` muestra el estado persistido.
 
 ---
 

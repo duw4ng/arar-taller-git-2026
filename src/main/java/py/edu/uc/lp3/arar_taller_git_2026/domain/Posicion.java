@@ -2,9 +2,11 @@ package py.edu.uc.lp3.arar_taller_git_2026.domain;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
+@Schema(type = "string", example = "0,64,0", description = "Coordenadas `x,y,z` finitas separadas por comas. Se guardan en columnas numéricas.")
 public class Posicion {
 
     private double x;

@@ -23,8 +23,8 @@ Publicar un servicio HTTP con Spring Boot sobre el modelado de Minecraft que:
 ./mvnw spring-boot:run
 ```
 
-Servicio: <http://localhost:8080>  
-Consola H2: <http://localhost:8080/h2-console>  
+Servicio: <http://localhost:8082>
+Consola H2: <http://localhost:8082/h2-console>
 JDBC URL: `jdbc:h2:file:./data/entidades` — usuario `sa` — contraseña vacía.
 
 ## 3. URLs de la API
@@ -113,7 +113,7 @@ Ambas reglas se implementan en `SimulacionService`: `simularExplosion` calcula l
 
 1. Arrancar con `./mvnw spring-boot:run`.
 2. Importar `insomnia/POO-08-arar-taller-git-2026.json` en Insomnia.
-3. Seleccionar el entorno `Base Environment` (`baseUrl = http://localhost:8080`).
+3. Seleccionar el entorno `Base Environment` (`baseUrl = http://localhost:8082`).
 4. Ejecutar `GET /` y confirmar `200`.
 5. Crear un armero con `POST`; copiar el `id` devuelto a la variable `aldeanoId`.
 6. Crear un granjero (opcional) para tener las dos hijas.

@@ -1,5 +1,6 @@
 package py.edu.uc.lp3.arar_taller_git_2026.domain;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
@@ -14,9 +15,13 @@ public abstract class Entidad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador asignado por H2/JPA.", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
+    @Schema(description = "Nombre del aldeano.", example = "Pedro")
     private String nombre;
+
+    @Schema(description = "Vida actual; 0 significa que murió.", example = "20", minimum = "0")
     private int vida;
 
     @Embedded
@@ -25,6 +30,7 @@ public abstract class Entidad {
         @AttributeOverride(name = "y", column = @Column(name = "posicion_y")),
         @AttributeOverride(name = "z", column = @Column(name = "posicion_z"))
     })
+    @Schema(description = "Posición serializada como texto `x,y,z`.", example = "0,64,0")
     private Posicion posicion;
 
     protected Entidad() {

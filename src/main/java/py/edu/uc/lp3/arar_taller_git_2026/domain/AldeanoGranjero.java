@@ -1,15 +1,21 @@
 package py.edu.uc.lp3.arar_taller_git_2026.domain;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("GRANJERO")
 @JsonTypeName("GRANJERO")
+@Schema(name = "AldeanoGranjero", description = "Granjero: recibe el daño completo y queda en pánico si sobrevive a una explosión con daño.")
 public class AldeanoGranjero extends Aldeano {
 
+    @Schema(description = "Cultivo del granjero.", example = "Trigo")
     private String tipoCultivo;
+
+    @Schema(description = "Marcado por la simulación cuando recibió daño y sigue vivo.", example = "false", accessMode = Schema.AccessMode.READ_ONLY)
     private boolean enPanico;
 
     protected AldeanoGranjero() {

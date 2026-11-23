@@ -1,10 +1,12 @@
 package py.edu.uc.lp3.arar_taller_git_2026.domain;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public abstract class EntidadPasiva extends Entidad {
 
+    @Schema(description = "Alimento del aldeano.", example = "Carne")
     private String alimentacion;
 
     protected EntidadPasiva() {

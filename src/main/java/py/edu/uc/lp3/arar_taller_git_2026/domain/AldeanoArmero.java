@@ -1,14 +1,18 @@
 package py.edu.uc.lp3.arar_taller_git_2026.domain;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("ARMERO")
 @JsonTypeName("ARMERO")
+@Schema(name = "AldeanoArmero", description = "Armero: reduce el daño de la explosión en `nivelHerreria * 2`.")
 public class AldeanoArmero extends Aldeano {
 
+    @Schema(description = "Nivel de herrería; entero entre 1 y 5.", example = "2", minimum = "1", maximum = "5")
     private int nivelHerreria;
 
     protected AldeanoArmero() {

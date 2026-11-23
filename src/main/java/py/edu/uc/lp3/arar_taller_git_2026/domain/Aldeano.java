@@ -2,6 +2,9 @@ package py.edu.uc.lp3.arar_taller_git_2026.domain;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -18,8 +21,18 @@ import jakarta.persistence.Table;
     @JsonSubTypes.Type(value = AldeanoArmero.class, name = "ARMERO"),
     @JsonSubTypes.Type(value = AldeanoGranjero.class, name = "GRANJERO")
 })
+@Schema(
+        name = "Aldeano",
+        description = "Aldeano persistido en H2. La propiedad `tipo` distingue ARMERO de GRANJERO.",
+        discriminatorProperty = "tipo",
+        discriminatorMapping = {
+                @DiscriminatorMapping(value = "ARMERO", schema = AldeanoArmero.class),
+                @DiscriminatorMapping(value = "GRANJERO", schema = AldeanoGranjero.class)
+        },
+        subTypes = { AldeanoArmero.class, AldeanoGranjero.class })
 public abstract class Aldeano extends EntidadPasiva implements Danable {
 
+    @Schema(description = "Profesión del aldeano.", example = "Armero")
     private String profesion;
 
     protected Aldeano() {
