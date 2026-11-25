@@ -77,4 +77,4 @@ Respuestas completas en `docs/respuestas-ejemplo-poo-09.md`.
 - Respuestas de ejemplo: `docs/respuestas-ejemplo-poo-09.md`.
 - Bitácora: `BITACORA.md`.
 - Contrato: `/v3/api-docs` y `/swagger-ui.html`.
-- Corrección POO-08: `PENDIENTE_CONFIRMAR` (`24/24` o listado de observaciones cerradas).
+- Corrección POO-08: `18/24` (nota `7,5/10`). Observaciones cerradas en los commits [`f837d12`](https://github.com/duw4ng/arar-taller-git-2026/commit/f837d12) y [`6eca763`](https://github.com/duw4ng/arar-taller-git-2026/commit/6eca763), ya incluidos en el estado actual: los controllers dependen sólo de services; las validaciones, reglas y excepciones viven en `AldeanoService` y `SimulacionService`, y las entidades no lanzan excepciones; `Posicion` es `@Embeddable` con coordenadas `double` validadas en `PosicionParser`; no se puede revivir un aldeano con `vida = 0`; y README, diagrama Mermaid y licencia están actualizados. El puntaje ya publicado no se modifica.
