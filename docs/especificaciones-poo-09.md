@@ -8,7 +8,7 @@
 | A2 | Elias Pont | <https://github.com/eliasleonardo11-dotcom/EP-taller-git-2026> | `http://localhost:8080` |
 | A3 | Marcelo Romero | <https://github.com/mnri1904/mnri-taller-git-2026> | `http://localhost:8081` |
 
-Commits de los compañeros: A2 [`15f97c7`](https://github.com/eliasleonardo11-dotcom/EP-taller-git-2026/commit/15f97c7); A3 [`6ccc6ea06c82cc5fb684b8d299ec82cc55e0721d`](https://github.com/mnri1904/mnri-taller-git-2026/commit/6ccc6ea06c82cc5fb684b8d299ec82cc55e0721d). Commit de A1: [`bdac540`](https://github.com/duw4ng/arar-taller-git-2026/commit/bdac540b86b78ef006dd3e3d88ff1447255cb34c).
+Commits de los compañeros: A2 [`15f97c7`](https://github.com/eliasleonardo11-dotcom/EP-taller-git-2026/commit/15f97c7); A3 [`6ccc6ea06c82cc5fb684b8d299ec82cc55e0721d`](https://github.com/mnri1904/mnri-taller-git-2026/commit/6ccc6ea06c82cc5fb684b8d299ec82cc55e0721d). Commit de A1: [`2f29708`](https://github.com/duw4ng/arar-taller-git-2026/commit/2f29708979225397823ab90c27447032bca4536a).
 
 ## Escenario en una frase
 

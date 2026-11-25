@@ -7,11 +7,26 @@ Servicio HTTP con Spring Boot sobre el modelado de **Minecraft**. Persiste en **
 - **Spring Boot:** 4.1.1 · **springdoc-openapi:** 3.1.1 · **Java:** 21
 - **Contrato:** `/v3/api-docs` (JSON), `/v3/api-docs.yaml` (YAML), `/swagger-ui.html` (UI)
 - **Licencia:** Apache 2.0 (ver [`LICENSE`](LICENSE))
-- **Commit de la solución:** <https://github.com/duw4ng/arar-taller-git-2026/commit/f837d12a15ceedbe5d82f28b33ba4ec753795616>
+- **Commit de la solución:** <https://github.com/duw4ng/arar-taller-git-2026/commit/2f29708979225397823ab90c27447032bca4536a>
 - **Enunciado:** <https://github.com/alefq/afq-taller-git-2024/blob/main/docs/ejercicio-poo-08-crud-h2-insomnia-2026-10-28.md>
 - **Rúbrica:** <https://github.com/alefq/afq-taller-git-2024/blob/main/docs/RUBRICA-ejercicios-lp3-2026.md>
 
 ---
+
+## POO-08 en esta entrega
+
+La corrección recibida fue **18/24** (nota **7,5/10**), con observaciones en los criterios 2, 3 y 8. Están todas cerradas en el estado actual del repositorio, en los commits [`f837d12`](https://github.com/duw4ng/arar-taller-git-2026/commit/f837d12) y [`6eca763`](https://github.com/duw4ng/arar-taller-git-2026/commit/6eca763).
+
+| Criterio | Observación | Cierre |
+|---|---|---|
+| Organización en paquetes | `IndexController` y `DanableController` llamaban al repositorio directamente. | Ambos controllers dependen sólo de `AldeanoService`; el repositorio se usa únicamente desde los services. |
+| Organización en paquetes | El dominio lanzaba excepciones y contenía reglas de negocio. | Validaciones, reglas y excepciones viven en `AldeanoService`, `SimulacionService` y `PosicionParser`; las entidades sólo guardan estado. |
+| Ocultamiento e invariantes | La posición era un `String` libre y se podían guardar coordenadas como `"abc"`. | `Posicion` es `@Embeddable` con `double x`, `double y`, `double z` en columnas numéricas, validada en el service. |
+| Ocultamiento e invariantes | Un `PATCH` podía revivir un aldeano con vida `0`. | `AldeanoService` rechaza devolver vida a un aldeano muerto. |
+| Documentación | El README decía que el controller hacía la simulación y el Mermaid lo unía a `AldeanoRepository`. | Ambos reflejan que `SimulacionController` delega en `SimulacionService`. |
+| Documentación | Faltaba mencionar la licencia en el README. | El README indica Apache 2.0 y enlaza `LICENSE`. |
+
+El puntaje publicado no se vuelve a calificar con la rúbrica de 24; esta tabla deja constancia del cierre de cada observación.
 
 ## 1. Cómo arrancar
 
@@ -311,9 +326,9 @@ Para un granjero:
 
 | Rol | Responsable | Servicio | Regla que aporta | Efecto en su H2 |
 |---|---|---|---|---|
-| **A1** | Alexandre Avalos | este repositorio, puerto `8082` | orquesta el escenario y guarda la jugada | **Inserta** en `jugadas_cruzadas` sólo si A2 y A3 aceptan |
-| **A2** | Elias Pont | <https://github.com/eliasleonardo11-dotcom/EP-taller-git-2026>, commit [`15f97c7`](https://github.com/eliasleonardo11-dotcom/EP-taller-git-2026/commit/15f97c7), puerto `8080` | Creeper y Zombie vivos, `0 <= distancia <= rango`; daño `max(1, 12 - 3 * distancia)`; Creeper queda en vida `0` | su H2 cambia cuando acepta |
-| **A3** | Marcelo Romero | commit [`6ccc6ea`](https://github.com/mnri1904/mnri-taller-git-2026/commit/6ccc6ea06c82cc5fb684b8d299ec82cc55e0721d), puerto `8081` | Creeper vivo detona una vez; daño `12 - 3 * floor(distancia)` a Zombies y Cerdos a `<= 3` bloques | su H2 cambia cuando acepta |
+| **A1** | Alexandre Avalos | este repositorio, puerto `8082`, OpenAPI <http://localhost:8082/v3/api-docs> | orquesta el escenario y guarda la jugada | **Inserta** en `jugadas_cruzadas` sólo si A2 y A3 aceptan |
+| **A2** | Elias Pont | <https://github.com/eliasleonardo11-dotcom/EP-taller-git-2026>, commit [`15f97c7`](https://github.com/eliasleonardo11-dotcom/EP-taller-git-2026/commit/15f97c7), puerto `8080`, OpenAPI <http://localhost:8080/v3/api-docs> | Creeper y Zombie vivos, `0 <= distancia <= rango`; daño `max(1, 12 - 3 * distancia)`; Creeper queda en vida `0` | su H2 cambia cuando acepta |
+| **A3** | Marcelo Romero | <https://github.com/mnri1904/mnri-taller-git-2026>, commit [`6ccc6ea`](https://github.com/mnri1904/mnri-taller-git-2026/commit/6ccc6ea06c82cc5fb684b8d299ec82cc55e0721d), puerto `8081`, OpenAPI <http://localhost:8081/v3/api-docs> | Creeper vivo detona una vez; daño `12 - 3 * floor(distancia)` a Zombies y Cerdos a `<= 3` bloques | su H2 cambia cuando acepta |
 
 Configuración previa (los valores por defecto ya apuntan a los puertos acordados; las variables sólo sirven para sobrescribirlos):
 
@@ -321,6 +336,25 @@ Configuración previa (los valores por defecto ya apuntan a los puertos acordado
 export ELIAS_API_URL=http://localhost:8080
 export MARCELO_API_URL=http://localhost:8081
 export PORT=8082
+./mvnw spring-boot:run
+```
+
+Para levantar los tres servicios desde sus commits, en tres terminales distintas (si no están en la misma máquina, reemplazar `localhost` por la IP correspondiente en las variables de A1):
+
+```bash
+# A1 — Alexandre
+git clone https://github.com/duw4ng/arar-taller-git-2026.git && cd arar-taller-git-2026
+git checkout 2f29708979225397823ab90c27447032bca4536a
+./mvnw spring-boot:run
+
+# A2 — Elias
+git clone https://github.com/eliasleonardo11-dotcom/EP-taller-git-2026.git && cd EP-taller-git-2026
+git checkout 15f97c7
+./mvnw spring-boot:run
+
+# A3 — Marcelo
+git clone https://github.com/mnri1904/mnri-taller-git-2026.git && cd mnri-taller-git-2026
+git checkout 6ccc6ea06c82cc5fb684b8d299ec82cc55e0721d
 ./mvnw spring-boot:run
 ```
 
